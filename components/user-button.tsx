@@ -9,38 +9,34 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
 import { SignIn, SignOut } from "./auth-components"
+import { UserAvatar } from "./user-avatar"
+import getCurrentUser from "@/actions/getCurrentUser"
 
 export default async function UserButton() {
-  const session = await auth()
-  if (!session?.user) return (
+  const user = await getCurrentUser()
+  if (!user) return (
     <div className="w-full">
       <SignIn provider="github"/>
     </div>
   )
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative w-8 h-8 rounded-full">
-          <Avatar className="w-8 h-8">
-            {session.user.image && (
-              <AvatarImage
-                src={session.user.image}
-                alt={session.user.name ?? ""}
-              />
-            )}
-            <AvatarFallback>{session.user.email}</AvatarFallback>
-          </Avatar>
+          <UserAvatar
+            user={{ name: user.name || null, image: user.image || null }}
+            className="h-8 w-8"
+          />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
-              {session.user.name}
+              {user.name}
             </p>
             <p className="text-xs leading-none text-muted-foreground">
-              {session.user.email}
+              {user.email}
             </p>
           </div>
         </DropdownMenuLabel>
