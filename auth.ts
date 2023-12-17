@@ -1,11 +1,11 @@
-import NextAuth from "next-auth"
-import GitHub from "next-auth/providers/github"
-// import Google from "next-auth/providers/google"
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import type { NextAuthConfig } from "next-auth"
-import { db } from "./lib/db"
+import NextAuth from "next-auth";
+import GitHub from "next-auth/providers/github";
+// import Google from "next-auth/providers/google";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import type { NextAuthConfig } from "next-auth";
+import { db } from "./lib/db";
 
-export const config = {
+export const config: NextAuthConfig = {
   adapter: PrismaAdapter(db),
   pages: {
     signIn: '/login',
@@ -22,28 +22,32 @@ export const config = {
   ],
   callbacks: {
     
-    async jwt({ token, user }) {
-      const dbUser = await db.user.findFirst({
-        where: {
-          email: token.email,
-        },
-      })
-
-      if (!dbUser) {
-        if (user) {
-          token.id = user?.id
+    async session({ token, session }) {
+      if (token) {
+        if (session.user) {
+          session.user.id = token.id as string;
+          session.user.name = token.name;
+          session.user.email = token.email;
+          session.user.image = token.picture;
+        } else {
+          session.user = {
+            id: token.id as string,
+            name: token.name,
+            email: token.email,
+            image: token.picture,
+          };
         }
-        return token
+      }
+      return session;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id; 
       }
 
-      return {
-        id: dbUser.id,
-        name: dbUser.name,
-        email: dbUser.email,
-        picture: dbUser.image,
-      }
+      return token;
     },
   },
-} satisfies NextAuthConfig
+};
 
-export const { handlers, auth, signIn, signOut } = NextAuth(config)
+export const { handlers, auth, signIn, signOut } = NextAuth(config);

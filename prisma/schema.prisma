@@ -12,6 +12,7 @@ model Post {
   title     String
   content   Json?
   published Boolean  @default(false)
+  
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @default(now()) @map(name: "updated_at")
 
